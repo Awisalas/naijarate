@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NaijaRate — Live Exchange Rates</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0A0A0A;
+    color: white;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #008751;
+    border-bottom: 4px solid #FFD700;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Bangers', cursive;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: white;
+    text-shadow: 2px 2px 0 #000;
+  }
+
+  .logo span { color: #FFD700; }
+
+  .live-badge {
+    background: #CC0000;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #008751, #004d2e);
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 4px solid #FFD700;
+  }
+
+  .hero h1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(36px, 8vw, 64px);
+    letter-spacing: 3px;
+    color: #FFD700;
+    text-shadow: 3px 3px 0 #000;
+    margin-bottom: 8px;
+  }
+
+  .hero p {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+  }
+
+  .rates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    padding: 30px 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .rate-card {
+    background: #1A1A1A;
+    border: 3px solid #333;
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .rate-card:hover {
+    transform: translateY(-4px);
+    border-color: #FFD700;
+  }
+
+  .rate-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .card-usd::before { background: #008751; }
+  .card-gbp::before { background: #012169; }
+  .card-eur::before { background: #003399; }
+  .card-cad::before { background: #FF0000; }
+
+  .card-flag { font-size: 32px; margin-bottom: 8px; }
+  
+  .card-pair {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+
+  .card-rate {
+    font-family: 'Bangers', cursive;
+    font-size: 42px;
+    letter-spacing: 2px;
+    color: #FFD700;
+    line-height: 1;
+  }
+
+  .card-label {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  .card-ngn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: 'Bangers', cursive;
+    font-size: 22px;
+    color: #008751;
+    letter-spacing: 1px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Bangers', cursive;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: #FFD700;
+    animation: pulse 1s infinite;
+  }
+
+  .error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #CC0000;
+    font-weight: 700;
+  }
+
+  .last-updated {
+    text-align: center;
+    padding: 10px 20px 30px;
+    font-size: 12px;
+    color: #555;
+    letter-spacing: 1px;
+  }
+
+  .converter {
+    background: #111;
+    border: 3px solid #333;
+    border-radius: 4px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto 40px;
+  }
+
+  .converter h2 {
+    font-family: 'Bangers', cursive;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: #FFD700;
+    margin-bottom: 16px;
+  }
+
+  .converter-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .converter input, .converter select {
+    background: #1A1A1A;
+    border: 2px solid #333;
+    color: white;
+    padding: 10px 14px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    flex: 1;
+    min-width: 100px;
+    outline: none;
+  }
+
+  .converter input:focus, .converter select:focus {
+    border-color: #FFD700;
+  }
+
+  .converter-result {
+    margin-top: 14px;
+    font-family: 'Bangers', cursive;
+    font-size: 32px;
+    color: #008751;
+    letter-spacing: 2px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 2px solid #1A1A1A;
+    font-size: 12px;
+    color: #444;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NAIJA<span>RATE</span></div>
+  <div class="live-badge">● LIVE</div>
+</header>
+
+<div class="hero">
+  <h1>LIVE NAIRA RATES</h1>
+  <p>Real-time exchange rates for Nigerians 🇳🇬</p>
+</div>
+
+<div class="rates-grid" id="ratesGrid">
+  <div class="loading">LOADING RATES...</div>
+</div>
+
+<div class="last-updated" id="lastUpdated"></div>
+
+<div style="padding: 0 20px;">
+  <div class="converter">
+    <h2>QUICK CONVERTER</h2>
+    <div class="converter-row">
+      <input type="number" id="amount" placeholder="Amount" value="1">
+      <select id="currency">
+        <option value="USD">USD 🇺🇸</option>
+        <option value="GBP">GBP 🇬🇧</option>
+        <option value="EUR">EUR 🇪🇺</option>
+        <option value="CAD">CAD 🇨🇦</option>
+      </select>
+    </div>
+    <div class="converter-result" id="convertResult">= ₦0.00</div>
+  </div>
+</div>
+
+<footer>NAIJARATE © 2026 — BUILT BY AWIS | DATA FROM EXCHANGERATE-API</footer>
+
+<script>
+  let currentRates = {};
+
+  async function fetchRates() {
+    try {
+      const response = await fetch('/api/rates');
+      const data = await response.json();
+      
+      if (data.error) {
+        document.getElementById('ratesGrid').innerHTML = 
+          '<div class="error">Failed to load rates. Try again later.</div>';
+        return;
+      }
+
+      currentRates = data;
+      displayRates(data);
+      setupConverter();
+
+      document.getElementById('lastUpdated').textContent = 
+        'Last updated: ' + new Date(data.last_updated).toLocaleString();
+
+    } catch (err) {
+      document.getElementById('ratesGrid').innerHTML = 
+        '<div class="error">Connection error. Is the server running?</div>';
+    }
+  }
+
+  function displayRates(data) {
+    const cards = [
+      { pair: 'USD/NGN', rate: data.USD_NGN, flag: '🇺🇸', cls: 'card-usd', label: '1 US Dollar' },
+      { pair: 'GBP/NGN', rate: data.GBP_NGN, flag: '🇬🇧', cls: 'card-gbp', label: '1 British Pound' },
+      { pair: 'EUR/NGN', rate: data.EUR_NGN, flag: '🇪🇺', cls: 'card-eur', label: '1 Euro' },
+      { pair: 'CAD/NGN', rate: data.CAD_NGN, flag: '🇨🇦', cls: 'card-cad', label: '1 Canadian Dollar' },
+    ];
+
+    document.getElementById('ratesGrid').innerHTML = cards.map(card => `
+      <div class="rate-card ${card.cls}">
+        <div class="card-ngn">NGN</div>
+        <div class="card-flag">${card.flag}</div>
+        <div class="card-pair">${card.pair}</div>
+        <div class="card-rate">₦${Math.round(card.rate).toLocaleString()}</div>
+        <div class="card-label">${card.label} = ₦${Math.round(card.rate).toLocaleString()}</div>
+      </div>
+    `).join('');
+  }
+
+  function setupConverter() {
+    function convert() {
+      const amount = parseFloat(document.getElementById('amount').value) || 0;
+      const currency = document.getElementById('currency').value;
+      const rateKey = currency + '_NGN';
+      const rate = currentRates[rateKey] || 0;
+      const result = amount * rate;
+      document.getElementById('convertResult').textContent = 
+        `= ₦${result.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    document.getElementById('amount').addEventListener('input', convert);
+    document.getElementById('currency').addEventListener('change', convert);
+    convert();
+  }
+
+  // Fetch rates on load
+  fetchRates();
+
+  // Auto-refresh every 5 minutes
+  setInterval(fetchRates, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>
