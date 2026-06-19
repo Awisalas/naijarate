@@ -2,332 +2,503 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NaijaRate — Live Exchange Rates</title>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #0A0A0A;
-    color: white;
-    min-height: 100vh;
-  }
-
-  header {
-    background: #008751;
-    border-bottom: 4px solid #FFD700;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo {
-    font-family: 'Bangers', cursive;
-    font-size: 32px;
-    letter-spacing: 3px;
-    color: white;
-    text-shadow: 2px 2px 0 #000;
-  }
-
-  .logo span { color: #FFD700; }
-
-  .live-badge {
-    background: #CC0000;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 20px;
-    letter-spacing: 2px;
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .hero {
-    background: linear-gradient(135deg, #008751, #004d2e);
-    padding: 40px 20px;
-    text-align: center;
-    border-bottom: 4px solid #FFD700;
-  }
-
-  .hero h1 {
-    font-family: 'Bangers', cursive;
-    font-size: clamp(36px, 8vw, 64px);
-    letter-spacing: 3px;
-    color: #FFD700;
-    text-shadow: 3px 3px 0 #000;
-    margin-bottom: 8px;
-  }
-
-  .hero p {
-    color: rgba(255,255,255,0.8);
-    font-size: 14px;
-  }
-
-  .rates-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-    padding: 30px 20px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .rate-card {
-    background: #1A1A1A;
-    border: 3px solid #333;
-    border-radius: 4px;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s;
-  }
-
-  .rate-card:hover {
-    transform: translateY(-4px);
-    border-color: #FFD700;
-  }
-
-  .rate-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-  }
-
-  .card-usd::before { background: #008751; }
-  .card-gbp::before { background: #012169; }
-  .card-eur::before { background: #003399; }
-  .card-cad::before { background: #FF0000; }
-
-  .card-flag { font-size: 32px; margin-bottom: 8px; }
-  
-  .card-pair {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: #888;
-    margin-bottom: 6px;
-  }
-
-  .card-rate {
-    font-family: 'Bangers', cursive;
-    font-size: 42px;
-    letter-spacing: 2px;
-    color: #FFD700;
-    line-height: 1;
-  }
-
-  .card-label {
-    font-size: 13px;
-    color: #666;
-    margin-top: 4px;
-  }
-
-  .card-ngn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-family: 'Bangers', cursive;
-    font-size: 22px;
-    color: #008751;
-    letter-spacing: 1px;
-  }
-
-  .loading {
-    text-align: center;
-    padding: 60px 20px;
-    font-family: 'Bangers', cursive;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: #FFD700;
-    animation: pulse 1s infinite;
-  }
-
-  .error {
-    text-align: center;
-    padding: 40px 20px;
-    color: #CC0000;
-    font-weight: 700;
-  }
-
-  .last-updated {
-    text-align: center;
-    padding: 10px 20px 30px;
-    font-size: 12px;
-    color: #555;
-    letter-spacing: 1px;
-  }
-
-  .converter {
-    background: #111;
-    border: 3px solid #333;
-    border-radius: 4px;
-    padding: 24px;
-    max-width: 500px;
-    margin: 0 auto 40px;
-  }
-
-  .converter h2 {
-    font-family: 'Bangers', cursive;
-    font-size: 24px;
-    letter-spacing: 2px;
-    color: #FFD700;
-    margin-bottom: 16px;
-  }
-
-  .converter-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .converter input, .converter select {
-    background: #1A1A1A;
-    border: 2px solid #333;
-    color: white;
-    padding: 10px 14px;
-    font-size: 16px;
-    font-family: 'Inter', sans-serif;
-    flex: 1;
-    min-width: 100px;
-    outline: none;
-  }
-
-  .converter input:focus, .converter select:focus {
-    border-color: #FFD700;
-  }
-
-  .converter-result {
-    margin-top: 14px;
-    font-family: 'Bangers', cursive;
-    font-size: 32px;
-    color: #008751;
-    letter-spacing: 2px;
-  }
-
-  footer {
-    text-align: center;
-    padding: 20px;
-    border-top: 2px solid #1A1A1A;
-    font-size: 12px;
-    color: #444;
-    letter-spacing: 1px;
-  }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Real-time Nigerian Naira exchange rates, converter, alerts and portfolio tracker">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>NaijaRate — Live NGN Exchange Rates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
-<header>
-  <div class="logo">NAIJA<span>RATE</span></div>
-  <div class="live-badge">● LIVE</div>
+<!-- TOAST -->
+<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+  <div class="header-left">
+    <div class="logo-icon" aria-hidden="true">₦</div>
+    <span class="logo-text">Naija<span class="logo-accent">Rate</span></span>
+  </div>
+  <div class="header-right">
+    <button class="refresh-btn" id="refreshBtn"
+      onclick="App.manualRefresh()"
+      aria-label="Refresh rates"
+      title="Refresh rates">
+      ↻
+    </button>
+    <div class="live-pill" id="livePill">
+      <div class="live-dot" id="liveDot"></div>
+      <span id="liveText">LIVE</span>
+    </div>
+  </div>
 </header>
 
-<div class="hero">
-  <h1>LIVE NAIRA RATES</h1>
-  <p>Real-time exchange rates for Nigerians 🇳🇬</p>
-</div>
+<!-- MAIN -->
+<main class="main" role="main">
 
-<div class="rates-grid" id="ratesGrid">
-  <div class="loading">LOADING RATES...</div>
-</div>
+  <!-- ========== HOME TAB ========== -->
+  <section class="tab-section active" id="tab-home">
 
-<div class="last-updated" id="lastUpdated"></div>
+    <!-- Hero Card -->
+    <div class="hero-card" id="heroCard">
+      <div class="hero-top-row">
+        <div class="hero-pair" id="heroPair">🇺🇸 USD / 🇳🇬 NGN</div>
+        <div class="hero-copy-btn" id="heroCopyBtn"
+          onclick="App.copyRate()"
+          title="Copy rate"
+          role="button"
+          tabindex="0"
+          aria-label="Copy current rate">
+          ⎘
+        </div>
+      </div>
+      <div class="hero-rate" id="heroRate">
+        <div class="skeleton skeleton-hero"></div>
+      </div>
+      <div class="hero-footer">
+        <div class="change-badge" id="heroChange">
+          <div class="skeleton"
+            style="width:80px;height:26px;border-radius:6px;">
+          </div>
+        </div>
+        <div class="hero-date" id="heroDate"></div>
+      </div>
+    </div>
 
-<div style="padding: 0 20px;">
-  <div class="converter">
-    <h2>QUICK CONVERTER</h2>
-    <div class="converter-row">
-      <input type="number" id="amount" placeholder="Amount" value="1">
-      <select id="currency">
-        <option value="USD">USD 🇺🇸</option>
-        <option value="GBP">GBP 🇬🇧</option>
-        <option value="EUR">EUR 🇪🇺</option>
-        <option value="CAD">CAD 🇨🇦</option>
+    <!-- Refresh countdown -->
+    <div class="refresh-bar">
+      <div class="refresh-bar-label">
+        <span id="refreshLabel">Auto-refreshes in</span>
+        <span class="refresh-countdown" id="refreshCountdown">5:00</span>
+      </div>
+      <div class="refresh-track">
+        <div class="refresh-fill" id="refreshFill"></div>
+      </div>
+    </div>
+
+    <!-- Rate Cards -->
+    <div class="section-header">
+      <span class="section-label">Exchange Rates</span>
+      <span class="section-meta" id="lastRefresh"></span>
+    </div>
+
+    <div class="rates-grid" id="ratesGrid">
+      <div class="rate-card">
+        <div class="skeleton" style="height:120px;border-radius:16px;">
+        </div>
+      </div>
+      <div class="rate-card">
+        <div class="skeleton" style="height:120px;border-radius:16px;">
+        </div>
+      </div>
+      <div class="rate-card">
+        <div class="skeleton" style="height:120px;border-radius:16px;">
+        </div>
+      </div>
+      <div class="rate-card">
+        <div class="skeleton" style="height:120px;border-radius:16px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="section-header" style="margin-top:4px;">
+      <span class="section-label">Price History</span>
+      <span class="section-meta" id="chartPairLabel">USD/NGN</span>
+    </div>
+
+    <div class="card" id="chartCard">
+      <div class="chart-tabs" role="tablist">
+        <button class="chart-tab active" role="tab"
+          aria-selected="true"
+          onclick="App.setChartPeriod('24h',this)">24H</button>
+        <button class="chart-tab" role="tab"
+          aria-selected="false"
+          onclick="App.setChartPeriod('7d',this)">7D</button>
+        <button class="chart-tab" role="tab"
+          aria-selected="false"
+          onclick="App.setChartPeriod('30d',this)">30D</button>
+        <button class="chart-tab" role="tab"
+          aria-selected="false"
+          onclick="App.setChartPeriod('90d',this)">90D</button>
+        <button class="chart-tab" role="tab"
+          aria-selected="false"
+          onclick="App.setChartPeriod('1y',this)">1Y</button>
+      </div>
+
+      <div class="chart-stats">
+        <div class="chart-stat">
+          <div class="chart-stat-label">HIGH</div>
+          <div class="chart-stat-value green" id="chartHigh">—</div>
+        </div>
+        <div class="chart-stat">
+          <div class="chart-stat-label">LOW</div>
+          <div class="chart-stat-value red" id="chartLow">—</div>
+        </div>
+        <div class="chart-stat">
+          <div class="chart-stat-label">CHANGE</div>
+          <div class="chart-stat-value" id="chartChange">—</div>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="rateChart"
+          aria-label="Exchange rate chart"
+          role="img">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Market Comparison -->
+    <div class="section-header" style="margin-top:4px;">
+      <span class="section-label">Market Comparison</span>
+      <span class="section-meta">USD/NGN</span>
+    </div>
+
+    <div class="market-grid">
+      <div class="market-card">
+        <div class="market-source">OFFICIAL CBN</div>
+        <div class="market-rate" id="mktOfficial">—</div>
+        <div class="market-sub">Central Bank Rate</div>
+        <div class="market-tag neutral">OFFICIAL</div>
+      </div>
+      <div class="market-card market-best">
+        <div class="market-source">PARALLEL</div>
+        <div class="market-rate" id="mktParallel">—</div>
+        <div class="market-sub" id="mktSpread">—</div>
+        <div class="market-tag green">STREET RATE</div>
+      </div>
+      <div class="market-card">
+        <div class="market-source">USDT P2P</div>
+        <div class="market-rate" id="mktCrypto">—</div>
+        <div class="market-sub">Binance P2P Est.</div>
+        <div class="market-tag blue">CRYPTO</div>
+      </div>
+    </div>
+
+    <!-- Rate tip -->
+    <div class="tip-card" id="rateTip">
+      <span class="tip-icon">💡</span>
+      <span class="tip-text" id="tipText">
+        Loading market insight...
+      </span>
+    </div>
+
+  </section>
+
+  <!-- ========== CONVERTER TAB ========== -->
+  <section class="tab-section" id="tab-convert">
+
+    <!-- Mini rate bar -->
+    <div class="mini-rate-bar" id="miniRateBar">
+      <span id="miniRateText">Loading rates...</span>
+    </div>
+
+    <div class="section-header" style="margin-bottom:16px;">
+      <span class="section-label">Currency Converter</span>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <div class="conv-row">
+        <div class="conv-label">FROM</div>
+        <div class="conv-input-row">
+          <input class="conv-input" type="number"
+            id="fromAmount" placeholder="0" value="1"
+            min="0" inputmode="decimal"
+            aria-label="Amount to convert"
+            oninput="App.convertDebounced()">
+          <select class="conv-select" id="fromCurrency"
+            aria-label="From currency"
+            onchange="App.convert()">
+            <option value="USD">🇺🇸 USD</option>
+            <option value="GBP">🇬🇧 GBP</option>
+            <option value="EUR">🇪🇺 EUR</option>
+            <option value="CAD">🇨🇦 CAD</option>
+            <option value="NGN">🇳🇬 NGN</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="swap-row">
+        <div class="swap-line"></div>
+        <button class="swap-btn" onclick="App.swap()"
+          aria-label="Swap currencies">⇅</button>
+        <div class="swap-line"></div>
+      </div>
+
+      <div class="conv-row conv-row-result">
+        <div class="conv-label">TO</div>
+        <div class="conv-input-row">
+          <div class="conv-result" id="toAmount"
+            aria-live="polite"
+            aria-label="Converted amount">
+            0.00
+          </div>
+          <select class="conv-select" id="toCurrency"
+            aria-label="To currency"
+            onchange="App.convert()">
+            <option value="NGN">🇳🇬 NGN</option>
+            <option value="USD">🇺🇸 USD</option>
+            <option value="GBP">🇬🇧 GBP</option>
+            <option value="EUR">🇪🇺 EUR</option>
+            <option value="CAD">🇨🇦 CAD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="conv-rate-info" id="convRateInfo"
+        aria-live="polite">
+        Waiting for rates...
+      </div>
+    </div>
+
+    <!-- Quick amounts -->
+    <div class="section-header" style="margin-top:16px;">
+      <span class="section-label">Quick Convert</span>
+    </div>
+    <div class="quick-grid">
+      <button class="quick-btn"
+        onclick="App.quickConvert(100)">
+        <span class="quick-amount">$100</span>
+        <span class="quick-ngn" id="q100">—</span>
+      </button>
+      <button class="quick-btn"
+        onclick="App.quickConvert(500)">
+        <span class="quick-amount">$500</span>
+        <span class="quick-ngn" id="q500">—</span>
+      </button>
+      <button class="quick-btn"
+        onclick="App.quickConvert(1000)">
+        <span class="quick-amount">$1,000</span>
+        <span class="quick-ngn" id="q1000">—</span>
+      </button>
+      <button class="quick-btn"
+        onclick="App.quickConvert(5000)">
+        <span class="quick-amount">$5,000</span>
+        <span class="quick-ngn" id="q5000">—</span>
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ========== ALERTS TAB ========== -->
+  <section class="tab-section" id="tab-alerts">
+
+    <div class="section-header" style="margin-bottom:16px;">
+      <span class="section-label">Rate Alerts</span>
+      <span class="section-meta" id="alertCount">0 active</span>
+    </div>
+
+    <button class="add-btn"
+      onclick="App.openModal('alertModal')"
+      aria-label="Set new rate alert">
+      + Set New Alert
+    </button>
+
+    <div id="alertsList" role="list" aria-live="polite"></div>
+
+  </section>
+
+  <!-- ========== PORTFOLIO TAB ========== -->
+  <section class="tab-section" id="tab-portfolio">
+
+    <div class="section-header" style="margin-bottom:16px;">
+      <span class="section-label">My Portfolio</span>
+      <span class="section-meta" id="assetCount">0 assets</span>
+    </div>
+
+    <div class="port-hero-card">
+      <div class="port-total-label">Total Value in Naira</div>
+      <div class="port-total" id="portfolioTotal">₦0</div>
+      <div class="port-sub" id="portfolioSub">
+        Add assets to track your holdings
+      </div>
+    </div>
+
+    <div class="port-grid" id="portfolioGrid"></div>
+
+    <button class="add-btn outline"
+      onclick="App.openModal('assetModal')"
+      aria-label="Add new asset">
+      + Add Asset
+    </button>
+
+  </section>
+
+  <!-- ========== NEWS TAB ========== -->
+  <section class="tab-section" id="tab-news">
+
+    <div class="section-header" style="margin-bottom:16px;">
+      <span class="section-label">Financial News</span>
+      <span class="section-meta">Nigeria & Global FX</span>
+    </div>
+
+    <div id="newsFeed" aria-live="polite"></div>
+
+  </section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" role="navigation"
+  aria-label="Main navigation">
+  <button class="nav-btn active"
+    onclick="App.switchTab('home',this)"
+    aria-label="Rates" aria-selected="true">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Rates</span>
+  </button>
+  <button class="nav-btn"
+    onclick="App.switchTab('convert',this)"
+    aria-label="Converter" aria-selected="false">
+    <span class="nav-icon">💱</span>
+    <span class="nav-label">Convert</span>
+  </button>
+  <button class="nav-btn"
+    onclick="App.switchTab('alerts',this)"
+    aria-label="Alerts" aria-selected="false">
+    <span class="nav-icon">🔔</span>
+    <span class="nav-label">Alerts</span>
+    <span class="nav-badge" id="alertBadge"
+      style="display:none"></span>
+  </button>
+  <button class="nav-btn"
+    onclick="App.switchTab('portfolio',this)"
+    aria-label="Portfolio" aria-selected="false">
+    <span class="nav-icon">💼</span>
+    <span class="nav-label">Portfolio</span>
+  </button>
+  <button class="nav-btn"
+    onclick="App.switchTab('news',this)"
+    aria-label="News" aria-selected="false">
+    <span class="nav-icon">📰</span>
+    <span class="nav-label">News</span>
+  </button>
+</nav>
+
+<!-- ALERT MODAL -->
+<div class="modal-overlay" id="alertModal"
+  role="dialog" aria-modal="true"
+  aria-labelledby="alertModalTitle">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 class="modal-title" id="alertModalTitle">
+      Set Rate Alert 🔔
+    </h2>
+    <div class="modal-current-rate" id="alertCurrentRate">
+      Current USD/NGN: loading...
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="alertPair">
+        Currency Pair
+      </label>
+      <select class="modal-input" id="alertPair"
+        onchange="App.updateAlertHint()">
+        <option value="USD_NGN">🇺🇸 USD / 🇳🇬 NGN</option>
+        <option value="GBP_NGN">🇬🇧 GBP / 🇳🇬 NGN</option>
+        <option value="EUR_NGN">🇪🇺 EUR / 🇳🇬 NGN</option>
+        <option value="CAD_NGN">🇨🇦 CAD / 🇳🇬 NGN</option>
       </select>
     </div>
-    <div class="converter-result" id="convertResult">= ₦0.00</div>
+    <div class="modal-field">
+      <label class="modal-label" for="alertCondition">
+        Condition
+      </label>
+      <select class="modal-input" id="alertCondition">
+        <option value="above">Rate goes above ▲</option>
+        <option value="below">Rate goes below ▼</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="alertTarget">
+        Target Rate (₦)
+      </label>
+      <input class="modal-input" type="number"
+        id="alertTarget"
+        placeholder="e.g. 1600"
+        min="100" max="10000"
+        inputmode="numeric">
+    </div>
+    <button class="modal-btn"
+      onclick="App.saveAlert()">
+      Create Alert
+    </button>
+    <button class="modal-cancel"
+      onclick="App.closeModal('alertModal')">
+      Cancel
+    </button>
   </div>
 </div>
 
-<footer>NAIJARATE © 2026 — BUILT BY AWIS | DATA FROM EXCHANGERATE-API</footer>
+<!-- ASSET MODAL -->
+<div class="modal-overlay" id="assetModal"
+  role="dialog" aria-modal="true"
+  aria-labelledby="assetModalTitle">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 class="modal-title" id="assetModalTitle">
+      Add Asset 💼
+    </h2>
+    <div class="modal-field">
+      <label class="modal-label" for="assetCurrency">
+        Currency
+      </label>
+      <select class="modal-input" id="assetCurrency">
+        <option value="USD">🇺🇸 USD — US Dollar</option>
+        <option value="GBP">🇬🇧 GBP — British Pound</option>
+        <option value="EUR">🇪🇺 EUR — Euro</option>
+        <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="assetAmount">
+        Amount
+      </label>
+      <input class="modal-input" type="number"
+        id="assetAmount"
+        placeholder="e.g. 500"
+        min="0"
+        inputmode="decimal">
+    </div>
+    <div class="modal-ngn-preview" id="assetNgnPreview">
+      ≈ ₦0 NGN
+    </div>
+    <button class="modal-btn"
+      onclick="App.saveAsset()">
+      Add to Portfolio
+    </button>
+    <button class="modal-cancel"
+      onclick="App.closeModal('assetModal')">
+      Cancel
+    </button>
+  </div>
+</div>
 
-<script>
-  let currentRates = {};
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal"
+  role="dialog" aria-modal="true">
+  <div class="modal" style="padding-bottom:30px;">
+    <div class="modal-handle"></div>
+    <h2 class="modal-title" id="confirmTitle">
+      Are you sure?
+    </h2>
+    <p class="modal-desc" id="confirmDesc"></p>
+    <button class="modal-btn danger"
+      id="confirmYes">
+      Yes, Remove
+    </button>
+    <button class="modal-cancel"
+      onclick="App.closeModal('confirmModal')">
+      Cancel
+    </button>
+  </div>
+</div>
 
-  async function fetchRates() {
-    try {
-      const response = await fetch('/api/rates');
-      const data = await response.json();
-      
-      if (data.error) {
-        document.getElementById('ratesGrid').innerHTML = 
-          '<div class="error">Failed to load rates. Try again later.</div>';
-        return;
-      }
-
-      currentRates = data;
-      displayRates(data);
-      setupConverter();
-
-      document.getElementById('lastUpdated').textContent = 
-        'Last updated: ' + new Date(data.last_updated).toLocaleString();
-
-    } catch (err) {
-      document.getElementById('ratesGrid').innerHTML = 
-        '<div class="error">Connection error. Is the server running?</div>';
-    }
-  }
-
-  function displayRates(data) {
-    const cards = [
-      { pair: 'USD/NGN', rate: data.USD_NGN, flag: '🇺🇸', cls: 'card-usd', label: '1 US Dollar' },
-      { pair: 'GBP/NGN', rate: data.GBP_NGN, flag: '🇬🇧', cls: 'card-gbp', label: '1 British Pound' },
-      { pair: 'EUR/NGN', rate: data.EUR_NGN, flag: '🇪🇺', cls: 'card-eur', label: '1 Euro' },
-      { pair: 'CAD/NGN', rate: data.CAD_NGN, flag: '🇨🇦', cls: 'card-cad', label: '1 Canadian Dollar' },
-    ];
-
-    document.getElementById('ratesGrid').innerHTML = cards.map(card => `
-      <div class="rate-card ${card.cls}">
-        <div class="card-ngn">NGN</div>
-        <div class="card-flag">${card.flag}</div>
-        <div class="card-pair">${card.pair}</div>
-        <div class="card-rate">₦${Math.round(card.rate).toLocaleString()}</div>
-        <div class="card-label">${card.label} = ₦${Math.round(card.rate).toLocaleString()}</div>
-      </div>
-    `).join('');
-  }
-
-  function setupConverter() {
-    function convert() {
-      const amount = parseFloat(document.getElementById('amount').value) || 0;
-      const currency = document.getElementById('currency').value;
-      const rateKey = currency + '_NGN';
-      const rate = currentRates[rateKey] || 0;
-      const result = amount * rate;
-      document.getElementById('convertResult').textContent = 
-        `= ₦${result.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    document.getElementById('amount').addEventListener('input', convert);
-    document.getElementById('currency').addEventListener('change', convert);
-    convert();
-  }
-
-  // Fetch rates on load
-  fetchRates();
-
-  // Auto-refresh every 5 minutes
-  setInterval(fetchRates, 5 * 60 * 1000);
-</script>
-
+<script src="js/app.js"></script>
 </body>
 </html>
